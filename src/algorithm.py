@@ -1,36 +1,58 @@
 import itertools
 
-def pack_items_recursive(bin_dims, orientation_list):
-    W, H, L = bin_dims
+def calculate_remaining_space(bin_dims, orientation):
+    """Calculate remaining dimensions after fitting cases."""
+    W, D, H = bin_dims
+    a, b, c = orientation
+    sub_W = W % a
+    sub_D = D % b
+    sub_H = H % c
+    return sub_W, sub_D, sub_H
 
-    if W <= 0 or H <= 0 or L <= 0:
-        print("The width, length and height of bin must larger than 0.")
-        return 0, 0
+def calculated_n(bin_dims, orientation):
+    """Calculate how many cases fit into the bin for a given orientation."""
+    W, D, H = bin_dims
+    a, b, c = orientation
+    n = (W // a) * (D // b) * (H // c)
+    return n
 
-    n_optimal = 0
-    total_packed = 0
-    for a, b, c in orientation_list:
-        n = (W // a) * (H // b) * (L // c)
+def recursive_computation(bin_dims, orientation_list, used_orientation, total_n):
+    """Recursive computation to calculate the total number of cases fitting into the bin."""
+    for orientation in orientation_list:
+        if orientation in used_orientation:
+            continue
 
-        if n > n_optimal:
-            n_optimal = n
+        n = calculated_n(bin_dims, orientation)
+        print('n:',n, orientation)
 
-        remaining_W = W - (W // a)
-        remaining_H = H - (H // b)
-        remaining_L = L - (L // c)
+        if n < 1:
+            # Skip to the next orientation if the current one cannot fit
+            continue
 
-        remaining_n = 1
-        while remaining_n >= 1: # when remaining_n < 1, stop
-            if remaining_W <= 0 or remaining_H <= 0 or remaining_L <= 0:
-                break
-            else:
-                remaining_n, _ = pack_items_recursive((remaining_W, remaining_H, remaining_L), [x for x in orientation_list if x != (a, b, c)])
+        # Add the current orientation to the used list
+        total_n += n
+        used_orientation.append(orientation)
 
-            if n_optimal + remaining_n > total_packed:
-                total_packed = n_optimal + remaining_n
+        # Calculate remaining bin dimensions
+        sub_W, sub_D, sub_H = calculate_remaining_space(bin_dims, orientation)
+        remaining_bin_dims = (sub_W, sub_D, sub_H)
 
-    return n_optimal, total_packed
+        # Recursively compute for the remaining space
+        total_n = recursive_computation(remaining_bin_dims, orientation_list, used_orientation, total_n)
+        
+        # Remove the orientation from used list after recursion to allow other paths
+        print('used_orientation:',used_orientation, 'and total_n:', total_n)
+        used_orientation.pop()
+        total_n = 0
+        
 
-item_dimensions = (3, 4, 5)
-orientation_list = list(itertools.permutations(item_dimensions))
-print(orientation_list)
+    return total_n
+
+# Main code
+case_dims = (18.9,15.5,14.1)
+bin_dims = (40.00,48.00,30.00)
+orientation_list = list(itertools.permutations(case_dims))
+used_orientation = []
+total_n = 0
+
+total_n = recursive_computation(bin_dims, orientation_list, used_orientation, total_n)
