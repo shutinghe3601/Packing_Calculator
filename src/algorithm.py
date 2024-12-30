@@ -18,12 +18,14 @@ def calculated_n(bin_dims, orientation):
 
 def recursive_computation(bin_dims, orientation_list, used_orientation, total_n):
     """Recursive computation to calculate the total number of cases fitting into the bin."""
+    optimal_n = 0
+    optimal_orientation = None
     for orientation in orientation_list:
         if orientation in used_orientation:
             continue
 
         n = calculated_n(bin_dims, orientation)
-        print('n:',n, orientation)
+        # print('n:',n, orientation)
 
         if n < 1:
             # Skip to the next orientation if the current one cannot fit
@@ -41,11 +43,14 @@ def recursive_computation(bin_dims, orientation_list, used_orientation, total_n)
         total_n = recursive_computation(remaining_bin_dims, orientation_list, used_orientation, total_n)
         
         # Remove the orientation from used list after recursion to allow other paths
-        print('used_orientation:',used_orientation, 'and total_n:', total_n)
+        # print('used_orientation:',used_orientation, 'and total_n:', total_n)
+        if total_n > optimal_n:
+            optimal_n = total_n
+            optimal_orientation = used_orientation.copy()
         used_orientation.pop()
         total_n = 0
         
-
+    print(optimal_n, optimal_orientation)
     return total_n
 
 # Main code
