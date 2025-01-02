@@ -13,7 +13,9 @@ where status  = 'A'
 """
 
 loc_dims = """
-select loc.warehouse_number, loc.location_no, size.width_inch * size.fill_rate as loc_width, size.height_inch * size.fill_rate as loc_height, size.depth_inch * size.fill_rate as loc_depth
+select cast(loc.warehouse_number as int) as warehouse_number, loc.location_no as location_number, cast(size.width_inch * size.fill_rate as float) as width_inch, 
+    cast(size.height_inch * size.fill_rate as float) as height_inch, 
+    cast(size.depth_inch * size.fill_rate as float) as depth_inch
 from dwd.wh_storage_location loc 
 left join dwd.wms_wh_location_size size on loc.size_id  = size.size_id 
 where loc.location_type  = 3
@@ -31,18 +33,18 @@ connect.closure(cursor, conn)
 
 text = 'var locData = '
 end = ';'
-with open('data/sample_locData.txt','w') as file:
+with open('data/locData.js','w') as file:
     file.write(text)
-    file.writelines(str(loc_data[:10]))
+    file.writelines(str(loc_data))
     file.write(end)
 
-text2 = 'var itemData = '
-with open('data/sample_itemData.txt', 'w') as file:
+text2 = 'var caseData = '
+with open('data/caseData.js', 'w') as file:
     file.write(text2)
-    file.writelines(str(item_data[:10]))
+    file.writelines(str(item_data))
     file.write(end)
 
-print('txt file done.')
+print('Javascript data files done.')
 
 # data.to_csv('data/inventory_20241211_wh37.csv', index = False)
 
