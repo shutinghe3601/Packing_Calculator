@@ -1,2 +1,5 @@
-var itemData = 
-[{'sku_id': '92', 'name': '【興隆】興隆叉烧', 'case_length': 0.0, 'case_width': 0.0, 'case_height': 0.0}, {'sku_id': '114', 'name': '黑龙 秋菊 黑豆荫油', 'case_length': 0.0, 'case_width': 0.0, 'case_height': 0.0}, {'sku_id': '223', 'name': '广州酒家利口福 莲蓉包 广式早茶点心 240.00 克', 'case_length': 10.2, 'case_width': 19.2, 'case_height': 10.6}, {'sku_id': '237', 'name': '三全 网袋龙舟粽 八宝味 冷冻 520.00 克', 'case_length': 11.7, 'case_width': 17.0, 'case_height': 8.5}, {'sku_id': '460', 'name': '红色袋子 小老鸡  Stewing Chicken 约1.5-2磅/只', 'case_length': 23.1, 'case_width': 15.8, 'case_height': 4.6}, {'sku_id': '463', 'name': '三全龙舟粽 豆沙 8粒', 'case_length': 11.8, 'case_width': 16.9, 'case_height': 13.5}, {'sku_id': '726', 'name': '【西域小巴郎】特色烤羊肉串', 'case_length': 0.0, 'case_width': 0.0, 'case_height': 0.0}, {'sku_id': '1145', 'name': '味鲜 台式鸡肉包 冷冻 12.00 盎司', 'case_length': 0.0, 'case_width': 0.0, 'case_height': 0.0}, {'sku_id': '1229', 'name': '日本和乐堂 Omotcheese 芝士年糕原味 6枚入', 'case_length': 0.0, 'case_width': 0.0, 'case_height': 0.0}, {'sku_id': '1239', 'name': '【小排档】手工猪肉馅饼 4个', 'case_length': 0.0, 'case_width': 0.0, 'case_height': 0.0}];
+var caseData = [
+    {'sku_id': '237', 'name':'alaladflal','case_length': 11.7, 'case_width': 17.0, 'case_height': 8.5},
+    {'sku_id': '460', 'name':'alalalal','case_length': 23.1, 'case_width': 15.8, 'case_height': 4.6},
+    {'sku_id': '001', 'name':'alalalal','case_length': 0, 'case_width': 0, 'case_height': 0}
+];
