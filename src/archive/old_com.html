@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Packing Optimization</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .input-container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .input-container input {
+            display: block;
+            margin: 10px auto;
+            padding: 8px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-container button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-container button:hover {
+            background-color: #45a049;
+        }
+        .output-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+    <script type="text/javascript" src="../data/gen_binData.js"></script>
+    <script type="text/javascript" src="../data/gen_itemData.js"></script>
+
+</head>
+<body>
+    <div class="input-container">
+        <label for="warehouseNumber">Input Warehouse Number</label>
+        <input type="text" id="warehouseNumber" placeholder="Enter warehouse number">
+
+        <label for="locationNumber">Input Location Number</label>
+        <input type="text" id="locationNumber" placeholder="Enter location number">
+
+        <label for="skuId">Input SKU ID</label>
+        <input type="text" id="skuId" placeholder="Enter SKU ID">
+
+        <button onclick="handleSubmit()">Submit</button>
+
+        <div class="output-container" id="outputContainer"></div>
+    </div>
+    <script>
+        async function handleSubmit() {
+            const warehouseNumber = document.getElementById('warehouseNumber').value;
+            const locationNumber = document.getElementById('locationNumber').value;
+            const skuId = document.getElementById('skuId').value;
+
+            try {
+                const result = optimizeCasePacking(warehouseNumber, locationNumber, skuId, binData, itemData);
+
+                const outputContainer = document.getElementById('outputContainer');
+                outputContainer.innerHTML = `
+                    <h3>Results</h3>
+                    <p><strong>Total Cases:</strong> ${result.totalCases}</p>
+                    <p><strong>Packing Orientations:</strong></p>
+                    <pre>${JSON.stringify(result.packingOrientations, null, 2)}</pre>
+                `;
+            } catch (error) {
+                const outputContainer = document.getElementById('outputContainer');
+                outputContainer.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        function optimizeCasePacking(warehouseNumber, locationNumber, skuId, binData, itemData) {
+            const bin = binData.find(
+                (b) => b.warehouse_number.toString() === warehouseNumber && b.location_number.toString() === locationNumber
+            );
+            if (!bin) throw new Error('Bin not found for the given warehouse and location number.');
+
+            const binDims = [bin.width_inch, bin.depth_inch, bin.height_inch];
+
+            const item = itemData.find((i) => i.sku_id.toString() === skuId);
+            if (!item) throw new Error('Item not found for the given SKU ID.');
+
+            const caseDims = [item.case_width, item.case_length, item.case_height];
+
+            const orientationList = generatePermutations(caseDims);
+            let totalCases = 0;
+            const packingOrientations = [];
+
+            while (true) {
+                let bestOrientation = null;
+                let maxCases = 0;
+                let remainingBinDims = null;
+
+                for (const orientation of orientationList) {
+                    const cases = calculateFitCount(binDims, orientation);
+                    if (cases > maxCases) {
+                        maxCases = cases;
+                        bestOrientation = orientation;
+                        remainingBinDims = calculateRemainingSpace(binDims, orientation);
+                    }
+                }
+
+                if (maxCases === 0) break;
+
+                totalCases += maxCases;
+                packingOrientations.push({ orientation: bestOrientation, count: maxCases });
+                binDims[0] = remainingBinDims[0];
+                binDims[1] = remainingBinDims[1];
+                binDims[2] = remainingBinDims[2];
+            }
+
+            return { totalCases, packingOrientations };
+        }
+
+        function calculateRemainingSpace(binDims, orientation) {
+            const [W, D, H] = binDims;
+            const [a, b, c] = orientation;
+            return [W % a, D % b, H % c];
+        }
+
+        function calculateFitCount(binDims, orientation) {
+            const [W, D, H] = binDims;
+            const [a, b, c] = orientation;
+            return Math.floor(W / a) * Math.floor(D / b) * Math.floor(H / c);
+        }
+
+        function generatePermutations(array) {
+            if (array.length === 0) return [[]];
+            const result = [];
+            for (let i = 0; i < array.length; i++) {
+                const rest = array.slice(0, i).concat(array.slice(i + 1));
+                const permutations = generatePermutations(rest);
+                for (const perm of permutations) {
+                    result.push([array[i], ...perm]);
+                }
+            }
+            return result;
+        }
+    </script>
+</body>
+</html>
