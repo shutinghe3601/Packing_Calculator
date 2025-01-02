@@ -2,6 +2,9 @@
 ## Project Description
 The Location Profile Calculator is a local HTML-based tool designed to compute the optimized orientation for arranging cases within a specified storage location. By taking into account the actual location dimensions (rather than just volume), it provides realistic and efficient solutions for bin and storage usage.
 
+### Note: 
+The actual calculator package is excluded from this repository for confidentiality reasons. To explore the functionality of this calculator, open src/compute_plot.html in your web browser.
+
 ### Key Features:
 - Optimized case orientation computation.
 - Real-time 3D visualization of the arrangement.
@@ -29,10 +32,10 @@ Data Security: Fully local execution, requiring no internet connection to protec
 Clone or download the repository.
 
 Use the following command to clone the project repository:
-    git clone git@github.com:shuting-weee/location_profile.git
+    *git clone git@github.com:shuting-weee/location_profile.git*
 
 ## How to Use
-- Open the *html_pack/final_compute_plot.html* file in your default web browser.
+- Open the *html* file in your default web browser.
 - Select the warehouse number from the dropdown list.
 - Input the location number (e.g., B0102-2-2).
 - Input the SKU ID (e.g., 237).
