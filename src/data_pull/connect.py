@@ -1,6 +1,7 @@
 import psycopg2
 import pandas as pd
 import hidden
+import json
 
 def connection(time_out = 3, func = hidden.secrets()):
     secrets = func
@@ -28,6 +29,14 @@ def execute_query(cursor, sql_query):
 
     df = pd.DataFrame(rows, columns=[desc[0] for desc in cursor.description])
     return df
+
+def exeute(cursor, sql_query):
+    sql = sql_query
+    cursor.execute(sql)
+    rows = cursor.fetchall()
+    columns = [column[0] for column in cursor.description]
+    data = [dict(zip(columns, row)) for row in rows]
+    return data
 
 
 def closure(cursor, conn):

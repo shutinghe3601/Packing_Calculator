@@ -1,52 +1,63 @@
 """
-This scripts returns the query that pulls the warehouse location dimensions and item case dimensions from the database.
+This scripts pulls the item case dimension and warehouse location dimensions, and convert to txt files that ready to convert to javascript files.
 """
 
 import hidden 
 import connect
 import pandas as pd
 
-sample = """
-select inv.item_number, inv.location_no, loc.size_id, 
-	loc_size.value, loc_size.width_inch as loc_width, loc_size.depth_inch as loc_depth, loc_size.height_inch as loc_height,
-	item.case_width, item.case_length, item.case_height 
-from dwd.wms_wh_inventory_transaction inv
-left join dwd.wms_storage_location loc on loc.location_no = inv.location_no
-	and loc.warehouse_number  = inv.warehouse_number 
-left join dwd.wms_wh_location_size loc_size on loc_size.size_id  = loc.size_id 
-left join dwd.wms_item item on item.item_number = inv.item_number 
-where inv.warehouse_number = 37 and inv.location_no != 'D-adjust'
-    and loc.size_id is not null
-"""
-
 item_case = """
-select item_number, name, case_width, case_length, case_height
+select item_number as sku_id, name, case_length ,case_width, case_height
 from dwd.wms_item
-where status = 'A'
+where status  = 'A'
 """
 
-bin_dims = """
-select warehouse_number, location_no, size_id, value, width_inch, depth_inch, height_inch
+loc_dims = """
+select loc.warehouse_number, loc.location_no, size.width_inch * size.fill_rate as loc_width, size.height_inch * size.fill_rate as loc_height, size.depth_inch * size.fill_rate as loc_depth
+from dwd.wh_storage_location loc 
+left join dwd.wms_wh_location_size size on loc.size_id  = size.size_id 
+where loc.location_type  = 3
 """
 
 cursor,conn = connect.connection(3, hidden.secrets())
-data = connect.execute_query(cursor, sample)
+# item_case = connect.execute_query(cursor, sample)
+loc_data = connect.exeute(cursor, loc_dims)
+item_data = connect.exeute(cursor, item_case)
+
+
+
 connect.closure(cursor, conn)
 
-data.to_csv('data/inventory_20241211_wh37.csv', index = False)
 
-# Sample DataFrame
-data = {
-    "Warehouse Number": [101, 102, 103],
-    "Location Number": [1, 2, 3],
-    "SKU ID": ["A123", "B456", "C789"]
-}
-df = pd.DataFrame(data)
+text = 'var locData = '
+end = ';'
+with open('data/sample_locData.txt','w') as file:
+    file.write(text)
+    file.writelines(str(loc_data[:10]))
+    file.write(end)
 
-# Convert DataFrame to JSON and save to a file
-json_file_path = 'output.json'
-df.to_json(json_file_path, orient='records', lines=True)
+text2 = 'var itemData = '
+with open('data/sample_itemData.txt', 'w') as file:
+    file.write(text2)
+    file.writelines(str(item_data[:10]))
+    file.write(end)
 
-print(f"JSON data file saved to {json_file_path}")
+print('txt file done.')
+
+# data.to_csv('data/inventory_20241211_wh37.csv', index = False)
+
+# # Sample DataFrame
+# data = {
+#     "Warehouse Number": [101, 102, 103],
+#     "Location Number": [1, 2, 3],
+#     "SKU ID": ["A123", "B456", "C789"]
+# }
+# df = pd.DataFrame(data)
+
+# # Convert DataFrame to JSON and save to a file
+# json_file_path = 'output.json'
+# df.to_json(json_file_path, orient='records', lines=True)
+
+# print(f"JSON data file saved to {json_file_path}")
 
 
