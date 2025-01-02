@@ -1,4 +1,3 @@
 .DS_Store
 src/data_pull/__pycache__
-data/caseData.js
-data/locData.js
+html_pack
