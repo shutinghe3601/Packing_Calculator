@@ -90,11 +90,32 @@
 
         <div style="margin-bottom: 15px;"></div> <!-- Adds a 15px space gap -->
 
-        <label for="locationNumber">Input Location Number</label>
-        <input type="text" id="locationNumber" placeholder="Enter location number">
+        <label for="locationNumber">Select Location Number</label>
+        <div style="margin-bottom: 10px;"></div> <!-- Adds a 15px space gap -->
+        <select id="locationNumber" class="aligned-input">
+            <option value="B03">B03</option>
+            <option value="B07">B07</option>
+            <option value="B08">B08</option>
+            <option value="B18">B18</option>
+            <option value="B20">B20</option>
+        </select>
+        <div style="margin-bottom: 15px;"></div> <!-- Adds a 15px space gap -->
 
-        <label for="skuId">Input SKU ID</label>
-        <input type="text" id="skuId" placeholder="Enter SKU ID">
+        <label for="skuId">Select SKU ID</label>
+        <div style="margin-bottom: 10px;"></div> <!-- Adds a 15px space gap -->
+        <select id="skuId" class="aligned-input">
+            <option value="22">22</option>
+            <option value="14">14</option>
+            <option value="23">23</option>
+            <option value="37">37</option>
+            <option value="60">60</option>
+        </select>
+<!-- 
+        <label for="locationNumber">Input Location Number</label>
+        <input type="text" id="locationNumber" placeholder="Enter location number"> -->
+
+        <!-- <label for="skuId">Input SKU ID</label>
+        <input type="text" id="skuId" placeholder="Enter SKU ID"> -->
 
         <button onclick="handleSubmit()">Submit</button>
 
