@@ -1,4 +1,4 @@
-warehouse_number,location_number,width_inch,depth_inch,height_inch,loc_inventory,case_qty
+warehouse_number,location_number,width_inch,depth_inch,height_inch,loc_inventory,loc_qty
 101,B03,32,36,20,14,2
 101,B07,32,38.4,24,23,3
 101,B08,40,36,20,37,6

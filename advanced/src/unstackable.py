@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 
 def read_data():
-    case = pd.read_csv('v2/data/caseData.csv').set_index('sku_id')
-    loc = pd.read_csv('v2/data/locData.csv').set_index(['warehouse_number', 'location_number'])
+    case = pd.read_csv('advanced/data/caseData.csv').set_index('sku_id')
+    loc = pd.read_csv('advanced/data/locData.csv').set_index(['warehouse_number', 'location_number'])
     return case, loc
 
 case, loc = read_data()
@@ -28,7 +28,7 @@ def space_for_new(warehouse_number, location_number, case = case, loc = loc, opt
     """Iterate all orientation, return the orientation with maximum number of cases"""
     loc_dims = tuple(loc.loc[(warehouse_number, location_number), ['width_inch', 'depth_inch', 'height_inch']].values)
     loc_inventory = loc.loc[(warehouse_number, location_number), 'loc_inventory']
-    loc_qty = loc.loc[(warehouse_number, location_number), 'loc_qty']
+    loc_qty = loc.loc[(warehouse_number, location_number), 'case_qty']
     
     case_dims = tuple(case.loc[loc_inventory, ['case_width', 'case_length', 'case_height']].values)
 
@@ -51,11 +51,11 @@ def space_for_new(warehouse_number, location_number, case = case, loc = loc, opt
         n_stack = np.ceil((loc_qty * best_orientation[2])/loc_dims[2])
         occupied_W = best_orientation[0]*n_stack
         occupied_D = best_orientation[1]*n_stack
-    else:
+    else: # assume existing loc inventories are placed on the floor horizontally
         occupied_W = best_orientation[0]*loc_qty
         occupied_D = best_orientation[1]*loc_qty    
     
-    # print(occupied_W, occupied_D)
+    print(occupied_W, occupied_D)
     major_space = tuple([loc_dims[0], loc_dims[1] - occupied_D, loc_dims[2]])
     sub_space = tuple([loc_dims[0] - occupied_W, occupied_D, loc_dims[2]])
 
@@ -105,4 +105,4 @@ def comprehensive(warehouse_number, location_number, sku_id, case = case, loc = 
         return 'Error: invalid dimensions.'
 
 
-print(comprehensive(101, 'B03', 60, optimize= True))
+print(comprehensive(101, 'B03', 37, optimize= True))
