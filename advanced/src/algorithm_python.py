@@ -18,8 +18,8 @@ def calculate_fit_count(loc_dims, orientation):
 
 def best_orientation(warehouse_number, location_number, sku_id):
     """Iterate all orientation, return the orientation with maximum number of cases"""
-    case = pd.read_csv('v2.1_easy_senario/data/caseData.csv').set_index('sku_id')
-    loc = pd.read_csv('v2.1_easy_senario/data/locData.csv').set_index(['warehouse_number', 'location_number'])
+    case = pd.read_csv('v2/data/caseData.csv').set_index('sku_id')
+    loc = pd.read_csv('v2/data/locData.csv').set_index(['warehouse_number', 'location_number'])
     loc_dims = tuple(loc.loc[(warehouse_number, location_number), ['width_inch', 'depth_inch', 'height_inch']].values)
     case_dims = tuple(case.loc[sku_id, ['case_width', 'case_length', 'case_height']].values)
 
@@ -34,15 +34,15 @@ def best_orientation(warehouse_number, location_number, sku_id):
             remaining_loc_dims = calculate_remaining_space(loc_dims, orientation)
     return main_orientation, maximum_cases, remaining_loc_dims, orientation_list
 
-main_orientation, maximum_cases, remaining_loc_dims, orientation_list = best_orientation(101, 'B20', 60)
+main_orientation, maximum_cases, remaining_loc_dims, orientation_list = best_orientation(101, 'B03', 14)
 main_orientation = [float(x) for x in main_orientation]
 
 def available_space(maximum_cases, warehouse_number, location_number):
-    loc = pd.read_csv('v2.1_easy_senario/data/locData.csv').set_index(['warehouse_number', 'location_number'])
-    existing_case = loc.loc[(warehouse_number, location_number),'inventory_cases']
+    loc = pd.read_csv('v2/data/locData.csv').set_index(['warehouse_number', 'location_number'])
+    existing_case = loc.loc[(warehouse_number, location_number),'case_qty']
     return maximum_cases - existing_case, existing_case
 
-available_case, existing_case = available_space(maximum_cases, 101, 'B20')
+available_case, existing_case = available_space(maximum_cases, 101, 'B03')
 
 def sub_orientation(remaining_loc_dims, orientation_list):
     sub_cases = 0
