@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Packing Optimization</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .input-container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .input-container input {
+            display: block;
+            margin: 10px auto;
+            padding: 8px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-container button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-container button:hover {
+            background-color: #45a049;
+        }
+        .output-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 80%;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script type="text/javascript" src="../data/sample_locData.js"></script>
+    <script type="text/javascript" src="../data/sample_caseData.js"></script>
+    <script type="text/javascript" src="./create3DPlot.js"></script>
+    <script type="text/javascript" src="./optimizeCasePacking.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/troika-three-text/dist/troika-three-text.umd.js"></script>
+
+</head>
+<body>
+    <div class="input-container">
+     
+        <style>
+            .aligned-input {
+                display: block;
+                margin: 10px auto;
+                padding: 8px;
+                width: 80%;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
+        </style>
+
+        <label for="warehouseNumber">Select Warehouse Number</label>
+        <div style="margin-bottom: 10px;"></div> <!-- Adds a 15px space gap -->
+        <select id="warehouseNumber" class="aligned-input">
+            <option value="101">101</option>
+        </select>
+
+        <div style="margin-bottom: 15px;"></div> <!-- Adds a 15px space gap -->
+
+        <label for="locationNumber">Select Location Number</label>
+        <div style="margin-bottom: 10px;"></div> <!-- Adds a 15px space gap -->
+        <select id="locationNumber" class="aligned-input">
+            <option value="B03">B03</option>
+            <option value="B07">B07</option>
+            <option value="B08">B08</option>
+            <option value="B18">B18</option>
+            <option value="B20">B20</option>
+        </select>
+        <div style="margin-bottom: 15px;"></div> <!-- Adds a 15px space gap -->
+
+        <label for="skuId">Select SKU ID</label>
+        <div style="margin-bottom: 10px;"></div> <!-- Adds a 15px space gap -->
+        <select id="skuId" class="aligned-input">
+            <option value="14">14</option>
+            <option value="22">22</option>
+
+            <option value="23">23</option>
+            <option value="37">37</option>
+            <option value="60">60</option>
+        </select>
+
+        <button onclick="handleSubmit()">Submit</button>
+
+        <div class="output-container" id="outputContainer"></div>
+    </div>
+    <script>
+        async function handleSubmit() {
+            const warehouseNumber = document.getElementById('warehouseNumber').value;
+            const locationNumber = document.getElementById('locationNumber').value;
+            const skuId = document.getElementById('skuId').value;
+
+            try {
+                const result = optimizeCasePacking(
+                    warehouseNumber,
+                    locationNumber,
+                    skuId,
+                    locData,
+                    caseData
+                );
+
+                const outputContainer = document.getElementById('outputContainer');
+                const { totalCases, packingOrientations } = result;
+                const loc = locData.find(
+                    (l) => l.warehouse_number.toString() === warehouseNumber && l.location_number.toString() === locationNumber
+                );
+                const item = caseData.find((i) => i.sku_id.toString() === skuId);
+
+                const locDims = [loc.width_inch, loc.depth_inch, loc.height_inch];
+                const caseDims = [item.case_width, item.case_length, item.case_height];
+                const skuName = item.name;
+
+                if (caseDims.every(dim => dim === 0)) {
+                    outputContainer.innerHTML = `
+                        <h3>Results</h3>
+                        <p><strong>SKU Name:</strong> ${skuName}</p>
+                        <p><strong>Location Dimensions:</strong> ${locDims.join(' x ')}</p>
+                        <p><strong>Case Dimensions:</strong> ${caseDims.join(' x ')}</p>
+                        <p style="color: red;">This SKU has invalid dimension data in the system. Please remeasure for accurate results.</p>
+                    `;
+                    return;
+                }
+
+                let rows = packingOrientations.map((orientation, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${orientation.orientation.join(' x ')}</td>
+                        <td>${orientation.count}</td>
+                    </tr>
+                `).join('');
+
+                outputContainer.innerHTML = `
+                    <h3>Results</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Orientation</th>
+                                <th>Number of Cases</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                    <p><strong>SKU Name:</strong> ${skuName}</p>
+                    <p><strong>Total Cases:</strong> ${totalCases}</p>
+                    <p><strong>Location Dimensions:</strong> ${locDims.join(' x ')}</p>
+                    <p><strong>Case Dimensions:</strong> ${caseDims.join(' x ')}</p>
+                `;
+                // Add 3D Plot
+                const plotContainer = document.createElement('div');
+                plotContainer.id = 'plotContainer';
+                outputContainer.appendChild(plotContainer);
+
+                create3DPlot(caseDims, locDims);
+            } catch (error) {
+                const outputContainer = document.getElementById('outputContainer');
+                outputContainer.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
