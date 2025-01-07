@@ -24,20 +24,28 @@ def calculate_fit_count(loc_dims, orientation):
     a, b, c = orientation
     return (W // a) * (L // b) * (H // c)
 
-def space_for_new(warehouse_number, location_number, case = case, loc = loc, optimize = False):
+def existing_parameter(loc_dims, orientation):
+    W, L, H = loc_dims
+    a, b, c = orientation
+
+    n_case_stack = H//c
+    n_case_row = W//a * H//c
+
+    return n_case_stack, n_case_row
+
+def space_for_new(warehouse_number, location_number, case = case, loc = loc):
     """Iterate all orientation, return the orientation with maximum number of cases"""
     loc_dims = tuple(loc.loc[(warehouse_number, location_number), ['width_inch', 'depth_inch', 'height_inch']].values)
     loc_inventory = loc.loc[(warehouse_number, location_number), 'loc_inventory']
-    loc_qty = loc.loc[(warehouse_number, location_number), 'case_qty']
+    loc_qty = loc.loc[(warehouse_number, location_number), 'loc_qty']
     
-    case_dims = tuple(case.loc[loc_inventory, ['case_width', 'case_length', 'case_height']].values)
+    loc_case_dims = tuple(case.loc[loc_inventory, ['case_width', 'case_length', 'case_height']].values)
 
-    if case_dims[0] * case_dims[1] * case_dims[2] == 0:
+    if loc_case_dims[0] * loc_case_dims[1] * loc_case_dims[2] == 0:
         print('Location invenotry SKU has invalid dimension data in the system. Please remeasure for accurate results.')
         return None, None 
 
-
-    orientation_list = list(itertools.permutations(case_dims))
+    orientation_list = list(itertools.permutations(loc_case_dims))
 
     maximum_cases  = 0
     for orientation in orientation_list:
@@ -46,19 +54,40 @@ def space_for_new(warehouse_number, location_number, case = case, loc = loc, opt
             maximum_cases = cases
             best_orientation = orientation
 
+    n_case_stack, n_case_row = existing_parameter(loc_dims, best_orientation)
 
-    if optimize: # optimize meaning stack all existing loc inventory together
-        n_stack = np.ceil((loc_qty * best_orientation[2])/loc_dims[2])
-        occupied_W = best_orientation[0]*n_stack
-        occupied_D = best_orientation[1]*n_stack
-    else: # assume existing loc inventories are placed on the floor horizontally
-        occupied_W = best_orientation[0]*loc_qty
-        occupied_D = best_orientation[1]*loc_qty    
+    complication = False
+
+    # compute existing arrangement
+    if loc_qty <= n_case_stack: # within one stack
+        occupied_W = best_orientation[0]
+        occupied_L = best_orientation[1]
+    elif loc_qty <= n_case_row: # within one row
+        occupied_W = best_orientation[0] * n_case_row/n_case_stack
+        occupied_L = best_orientation[1]
+    else: # more than more row
+        n_row = loc_qty//n_case_row
+        left = loc_qty%n_case_row
+        occupied_W = best_orientation[0] * n_case_row/n_case_stack
+        occupied_L = best_orientation[1] * n_row
+        if left != 0: # row + stack, create irregular space 
+            complication = True
+            n_stack = left//n_case_stack
+            left = left%n_case_stack # number of individual case
+            if left != 0:
+                n_stack += 1
+            occupied_w2 = best_orientation[0] * n_stack
+            occupied_l2 = best_orientation[1]
     
-    print(occupied_W, occupied_D)
-    major_space = tuple([loc_dims[0], loc_dims[1] - occupied_D, loc_dims[2]])
-    sub_space = tuple([loc_dims[0] - occupied_W, occupied_D, loc_dims[2]])
 
+    if complication:
+        major_space = (loc_dims[0], loc_dims[1] - (occupied_L + occupied_l2), loc_dims[2])
+        sub_space = [(loc_dims[0] - occupied_w2, occupied_l2,loc_dims[2]), (loc_dims[0] - occupied_W, occupied_L, loc_dims[2])]
+    else:
+        major_space = (loc_dims[0], loc_dims[1] - occupied_L, loc_dims[2])
+        sub_space = [(loc_dims[0] - occupied_W, occupied_L, loc_dims[2])]
+    
+    # print(best_orientation, complication)
     return major_space, sub_space
 
 def solution_for_new(sku_id, case, major_space, sub_space):
@@ -77,26 +106,33 @@ def solution_for_new(sku_id, case, major_space, sub_space):
         major_orientation = [float(x) for x in orientation]
         remaining_space = calculate_remaining_space(major_space, orientation)
 
-        effective_space = (sub_space[0], sub_space[1], sub_space[2] + remaining_space[2])
+        i = 0
+        good_sub_lst = []
+        good_sub_orient = []
+        while i < len(sub_space):
+            effective_space = (sub_space[i][0], sub_space[i][1] + remaining_space[1], sub_space[i][2])
+            good_sub_case = 0
+            sub_orientation = None
+            for orientation in orientation_list:
+                sub_case = calculate_fit_count(effective_space, orientation)
+                if sub_case > good_sub_case: # select the optimized sub_orientation
+                    good_sub_case = sub_case
+                    sub_orientation = [float(x) for x in orientation]
+                    remaining_space = calculate_remaining_space(effective_space, orientation) 
+            good_sub_lst.append(good_sub_case)
+            good_sub_orient.append(sub_orientation)
+            i += 1
 
-        good_sub_case = 0
-        sub_orientation = None
-        for orientation in orientation_list:
-            sub_case = calculate_fit_count(effective_space, orientation)
-            if sub_case > good_sub_case: # select the optimized sub_orientation
-                good_sub_case = sub_case
-                sub_orientation = [float(x) for x in orientation]
-
-        if major_case + good_sub_case > opt_cases: # select the optimized total solution
-            opt_cases = major_case + good_sub_case
-            opt_solution['orient'] = [major_orientation, sub_orientation]
-            opt_solution['n_case'] = [float(major_case), float(good_sub_case)]
+        if major_case + sum(good_sub_lst) > opt_cases: # select the optimized total solution
+            opt_cases = major_case + sum(good_sub_lst)
+            opt_solution['orient'] = [major_orientation, good_sub_orient]
+            opt_solution['n_case'] = [float(major_case), good_sub_lst]
 
     return opt_cases, opt_solution
 
         
-def comprehensive(warehouse_number, location_number, sku_id, case = case, loc = loc, optimize = False):
-    major_space, sub_space = space_for_new(warehouse_number, location_number, case, loc, optimize)
+def comprehensive(warehouse_number, location_number, sku_id, case = case, loc = loc):
+    major_space, sub_space = space_for_new(warehouse_number, location_number, case, loc)
     opt_cases, opt_solution = solution_for_new(sku_id, case, major_space, sub_space)
 
     if opt_cases:
@@ -104,5 +140,6 @@ def comprehensive(warehouse_number, location_number, sku_id, case = case, loc = 
     else:
         return 'Error: invalid dimensions.'
 
-
-print(comprehensive(101, 'B03', 37, optimize= True))
+a,b = comprehensive(101, 'B03', 37)
+print(a)
+print(b)
