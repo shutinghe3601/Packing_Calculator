@@ -40,19 +40,15 @@
             const loc = locData.find(
                 (l) => l.warehouse_number === parseInt(warehouseNumber) && l.location_number === locationNumber
             );
-            if (!loc) {
-                throw new Error(`Location not found for Warehouse ${warehouseNumber}, Location ${locationNumber}.`);
-            }
+
             const locDims = [loc.width_inch, loc.depth_inch, loc.height_inch]
 
             const locQty = loc.loc_qty
+            if (!locQty) throw new Error('there are something wrong with loc_QTY')
 
             const loc_inv = caseData.find(
                 (i) => i.sku_id === loc.loc_inventory.toString()
             );
-            if (!loc_inv) {
-                throw new Error(`Loc_inv has problem.`);
-            }
             
             const locCaseDims = [loc_inv.case_width, loc_inv.case_length, loc_inv.case_height];
 
@@ -104,8 +100,8 @@
             ] : [
                 [locDims[0] - occupiedW, occupiedL, locDims[2]]
             ];
-
-            return { majorSpace, subSpaces, bestOrientation, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, locDims };
+            
+            return {majorSpace, subSpaces, bestOrientation, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, locDims };
         }
 
         // Helper function to generate permutations
@@ -163,7 +159,7 @@
                 }
             });
 
-            return { optCases, optSolution, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication };
+            return {optCases, optSolution, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication};
         }
 
         // Example usage
