@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logistics Optimizer</title>
+    <script type="text/javascript" src="../data/locData.js"></script>
+    <script type="text/javascript" src="../data/caseData.js"></script>
     <script>
+        console.log(locData);
+
         // Function to calculate remaining space after fitting cases
         function calculateRemainingSpace(locDims, orientation) {
             const [W, L, H] = locDims;
@@ -29,7 +33,33 @@
         }
 
         // Main function to compute space for new cases
-        function spaceForNew(warehouseNumber, locationNumber, locDims, locCaseDims, locQty) {
+        function spaceForNew(warehouseNumber, locationNumber) {
+            // const loc = locData.find(
+            //     (l) => l.warehouse_number.toString() === warehouseNumber && l.location_number.toString() === locationNumber
+            // );
+            const loc = locData.find(
+                (l) => l.warehouse_number === parseInt(warehouseNumber) && l.location_number === locationNumber
+            );
+            if (!loc) {
+                throw new Error(`Location not found for Warehouse ${warehouseNumber}, Location ${locationNumber}.`);
+            }
+            const locDims = [loc.width_inch, loc.depth_inch, loc.height_inch]
+
+            const locQty = loc.loc_qty
+
+            const loc_inv = caseData.find(
+                (i) => i.sku_id === loc.loc_inventory.toString()
+            );
+            if (!loc_inv) {
+                throw new Error(`Loc_inv has problem.`);
+            }
+            
+            const locCaseDims = [loc_inv.case_width, loc_inv.case_length, loc_inv.case_height];
+
+            if (!loc_inv) {
+                loccaseDims = [0, 0, 0]
+            }
+
             const orientations = permute(locCaseDims);
             let maxCases = 0;
             let bestOrientation = null;
@@ -92,31 +122,44 @@
         }
 
         // Comprehensive function to compute all necessary results
-        function comprehensive(warehouseNumber, locationNumber, skuId, locDims, locCaseDims, locQty, newCaseDims) {
-            const spaceData = spaceForNew(warehouseNumber, locationNumber, locDims, locCaseDims, locQty);
+        function comprehensive(warehouseNumber, locationNumber, skuId) {
+            const spaceData = spaceForNew(warehouseNumber, locationNumber);
             const { majorSpace, subSpaces, bestOrientation, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, locDims: dims } = spaceData;
+
+            const item = caseData.find((i) => i.sku_id.toString() === skuId);
+            if (!item) throw new Error('Item not found for the given SKU ID.');
+
+            const newCaseDims = [item.case_width, item.case_length, item.case_height];
 
             const orientations = permute(newCaseDims);
             let optCases = 0;
-            let optSolution = null;
+            let optSolution = { orient: [], n_case: [] };
 
             orientations.forEach(orientation => {
                 const majorFit = calculateFitCount(majorSpace, orientation);
                 const remainingSpace = calculateRemainingSpace(majorSpace, orientation);
+
                 const subFits = subSpaces.map(space => {
                     const effectiveSpace = [space[0], space[1] + remainingSpace[1], space[2]];
                     let bestFit = 0;
+                    let bestSubOrientation = null;
+
                     orientations.forEach(subOrientation => {
                         const fit = calculateFitCount(effectiveSpace, subOrientation);
-                        if (fit > bestFit) bestFit = fit;
+                        if (fit > bestFit) {
+                            bestFit = fit;
+                            bestSubOrientation = subOrientation;
+                        }
                     });
-                    return bestFit;
+
+                    return { cases: bestFit, orientation: bestSubOrientation };
                 });
 
-                const totalCases = majorFit + subFits.reduce((a, b) => a + b, 0);
+                const totalCases = majorFit + subFits.reduce((sum, subFit) => sum + subFit.cases, 0);
                 if (totalCases > optCases) {
                     optCases = totalCases;
-                    optSolution = { majorOrientation: orientation, subOrientations: subFits };
+                    optSolution.orient = [orientation, subFits.map(sub => sub.orientation || null)];
+                    optSolution.n_case = [majorFit, subFits.map(sub => sub.cases || 0)];
                 }
             });
 
@@ -125,12 +168,12 @@
 
         // Example usage
         function runOptimizer() {
-            const locDims = [32,36,20]; // Replace with actual input values
-            const locCaseDims = [11,4,13]; // Replace with actual input values
-            const locQty = 2; // Replace with actual input values
-            const newCaseDims = [11,17,8]; // Replace with actual input values
+            const locDims = [32, 36, 20]; // Replace with actual input values
+            const locCaseDims = [11, 4, 13]; // Replace with actual input values
+            const locQty = 15; // Replace with actual input values
+            const newCaseDims = [11, 17, 8]; // Replace with actual input values
 
-            const result = comprehensive(101, 'B03', 37, locDims, locCaseDims, locQty, newCaseDims);
+            const result = comprehensive(101, 'B03', '37');
             document.getElementById('output').textContent = JSON.stringify(result, null, 2);
         }
     </script>

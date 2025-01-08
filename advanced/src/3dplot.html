@@ -52,8 +52,16 @@
 <body>
     <div id="plotContainer"></div>
     <script>
-        function create3DPlot(locDims, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, optSolution) {
+        function create3DPlot(computation_result) {
             const plotContainer = document.getElementById('plotContainer');
+
+            const locDims = computation_result.dims;
+            const occupiedW = computation_result.occupiedW;
+            const occupiedL = computation_result.occupiedL;
+            const occupiedW2 = computation_result.occupiedW2;
+            const occupiedL2 = computation_result.occupiedL2;
+            const complication = computation_result.complication; 
+            const optSolution = computation_result.optSolution;
 
             // Clear any previous canvas
             while (plotContainer.firstChild) {
@@ -204,14 +212,29 @@
         const occupiedL2 = 11;
         const locDims = [32, 36, 20];
         const complication = true;
+        const computation_result = {
+                    "optCases": 6,
+                    "optSolution": {
+                        "orient": [[8,11,17],[[17,11,8],null]],
+                        "n_case": [4,[2,0]]
+                    },
+                    "occupiedW": 26,
+                    "occupiedL": 11,
+                    "occupiedW2": 13,
+                    "occupiedL2": 11,
+                    "dims": [32,36,20],
+                    "complication": true
+                    }
         const optSolution = {
             orient: [
                 [8.0, 11.0, 17.0],//[[null]]
-                [[17.0, 11.0, 8.0], [8, 11, 17]],
+                [[17.0, 11.0, 8.0], null],
             ],
         };
 
-        create3DPlot(locDims, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, optSolution);
+        
+
+        create3DPlot(computation_result);
     </script>
 </body>
 </html>

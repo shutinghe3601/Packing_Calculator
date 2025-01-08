@@ -127,7 +127,7 @@ def solution_for_new(sku_id, case, major_space, sub_space):
         if major_case + sum(good_sub_lst) > opt_cases: # select the optimized total solution
             opt_cases = major_case + sum(good_sub_lst)
             opt_solution['orient'] = [major_orientation, good_sub_orient]
-            opt_solution['n_case'] = [float(major_case), good_sub_lst]
+            opt_solution['n_case'] = [float(major_case), [float(x) for x in good_sub_lst]]
 
     return opt_cases, opt_solution
 
