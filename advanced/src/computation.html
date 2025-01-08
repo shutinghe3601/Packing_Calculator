@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistics Optimizer</title>
+    <script>
+        // Function to calculate remaining space after fitting cases
+        function calculateRemainingSpace(locDims, orientation) {
+            const [W, L, H] = locDims;
+            const [a, b, c] = orientation;
+            return [W % a, L % b, H % c];
+        }
+
+        // Function to calculate how many cases fit into the location
+        function calculateFitCount(locDims, orientation) {
+            const [W, L, H] = locDims;
+            const [a, b, c] = orientation;
+            return Math.floor(W / a) * Math.floor(L / b) * Math.floor(H / c);
+        }
+
+        // Function to determine existing parameters
+        function existingParameter(locDims, orientation) {
+            const [W, L, H] = locDims;
+            const [a, b, c] = orientation;
+            const nCaseStack = Math.floor(H / c);
+            const nCaseRow = Math.floor(W / a) * nCaseStack;
+            return [nCaseStack, nCaseRow];
+        }
+
+        // Main function to compute space for new cases
+        function spaceForNew(warehouseNumber, locationNumber, locDims, locCaseDims, locQty) {
+            const orientations = permute(locCaseDims);
+            let maxCases = 0;
+            let bestOrientation = null;
+
+            orientations.forEach(orientation => {
+                const cases = calculateFitCount(locDims, orientation);
+                if (cases > maxCases) {
+                    maxCases = cases;
+                    bestOrientation = orientation;
+                }
+            });
+
+            const [nCaseStack, nCaseRow] = existingParameter(locDims, bestOrientation);
+            let occupiedW = 0, occupiedL = 0, occupiedW2 = 0, occupiedL2 = 0;
+            let complication = false;
+
+            if (locQty <= nCaseStack) {
+                occupiedW = bestOrientation[0];
+                occupiedL = bestOrientation[1];
+            } else if (locQty <= nCaseRow) {
+                occupiedW = bestOrientation[0] * (nCaseRow / nCaseStack);
+                occupiedL = bestOrientation[1];
+            } else {
+                complication = true;
+                const nRows = Math.floor(locQty / nCaseRow);
+                const remainder = locQty % nCaseRow;
+                occupiedW = bestOrientation[0] * (nCaseRow / nCaseStack);
+                occupiedL = bestOrientation[1] * nRows;
+
+                if (remainder > 0) {
+                    const nStacks = Math.floor(remainder / nCaseStack);
+                    const leftover = remainder % nCaseStack;
+                    occupiedW2 = bestOrientation[0] * (leftover > 0 ? nStacks + 1 : nStacks);
+                    occupiedL2 = bestOrientation[1];
+                }
+            }
+
+            const majorSpace = complication ? [locDims[0], locDims[1] - (occupiedL + occupiedL2), locDims[2]] : [locDims[0], locDims[1] - occupiedL, locDims[2]];
+            const subSpaces = complication ? [
+                [locDims[0] - occupiedW2, occupiedL2, locDims[2]],
+                [locDims[0] - occupiedW, occupiedL, locDims[2]]
+            ] : [
+                [locDims[0] - occupiedW, occupiedL, locDims[2]]
+            ];
+
+            return { majorSpace, subSpaces, bestOrientation, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, locDims };
+        }
+
+        // Helper function to generate permutations
+        function permute(arr) {
+            if (arr.length <= 1) return [arr];
+            const result = [];
+            arr.forEach((val, i) => {
+                const rest = arr.slice(0, i).concat(arr.slice(i + 1));
+                permute(rest).forEach(permutation => {
+                    result.push([val].concat(permutation));
+                });
+            });
+            return result;
+        }
+
+        // Comprehensive function to compute all necessary results
+        function comprehensive(warehouseNumber, locationNumber, skuId, locDims, locCaseDims, locQty, newCaseDims) {
+            const spaceData = spaceForNew(warehouseNumber, locationNumber, locDims, locCaseDims, locQty);
+            const { majorSpace, subSpaces, bestOrientation, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, locDims: dims } = spaceData;
+
+            const orientations = permute(newCaseDims);
+            let optCases = 0;
+            let optSolution = null;
+
+            orientations.forEach(orientation => {
+                const majorFit = calculateFitCount(majorSpace, orientation);
+                const remainingSpace = calculateRemainingSpace(majorSpace, orientation);
+                const subFits = subSpaces.map(space => {
+                    const effectiveSpace = [space[0], space[1] + remainingSpace[1], space[2]];
+                    let bestFit = 0;
+                    orientations.forEach(subOrientation => {
+                        const fit = calculateFitCount(effectiveSpace, subOrientation);
+                        if (fit > bestFit) bestFit = fit;
+                    });
+                    return bestFit;
+                });
+
+                const totalCases = majorFit + subFits.reduce((a, b) => a + b, 0);
+                if (totalCases > optCases) {
+                    optCases = totalCases;
+                    optSolution = { majorOrientation: orientation, subOrientations: subFits };
+                }
+            });
+
+            return { optCases, optSolution, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication };
+        }
+
+        // Example usage
+        function runOptimizer() {
+            const locDims = [32,36,20]; // Replace with actual input values
+            const locCaseDims = [11,4,13]; // Replace with actual input values
+            const locQty = 2; // Replace with actual input values
+            const newCaseDims = [11,17,8]; // Replace with actual input values
+
+            const result = comprehensive(101, 'B03', 37, locDims, locCaseDims, locQty, newCaseDims);
+            document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+        }
+    </script>
+</head>
+<body>
+    <h1>Logistics Optimizer</h1>
+    <button onclick="runOptimizer()">Run Optimizer</button>
+    <pre id="output"></pre>
+</body>
+</html>

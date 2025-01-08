@@ -58,6 +58,8 @@ def space_for_new(warehouse_number, location_number, case = case, loc = loc):
 
     complication = False
 
+    occupied_w2, occupied_l2 = None, None
+
     # compute existing arrangement
     if loc_qty <= n_case_stack: # within one stack
         occupied_W = best_orientation[0]
@@ -139,4 +141,4 @@ def comprehensive(warehouse_number, location_number, sku_id, case = case, loc = 
     else:
         return 'Error: invalid dimensions.'
 
-opt_cases, opt_solution, occupied_W, occupied_L, occupied_w2, occupied_l2, loc_dims = comprehensive(101, 'B03', 37)
+print(comprehensive(101, 'B03', 37))
