@@ -87,7 +87,7 @@ def space_for_new(warehouse_number, location_number, case = case, loc = loc):
         major_space = (loc_dims[0], loc_dims[1] - occupied_L, loc_dims[2])
         sub_space = [(loc_dims[0] - occupied_W, occupied_L, loc_dims[2])]
     
-    # print(best_orientation, complication)
+    print(best_orientation)
     return major_space, sub_space
 
 def solution_for_new(sku_id, case, major_space, sub_space):
@@ -136,7 +136,7 @@ def comprehensive(warehouse_number, location_number, sku_id, case = case, loc = 
     opt_cases, opt_solution = solution_for_new(sku_id, case, major_space, sub_space)
 
     if opt_cases:
-        return float(opt_cases), pd.DataFrame(opt_solution)
+        return float(opt_cases), opt_solution
     else:
         return 'Error: invalid dimensions.'
 
