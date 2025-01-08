@@ -87,8 +87,7 @@ def space_for_new(warehouse_number, location_number, case = case, loc = loc):
         major_space = (loc_dims[0], loc_dims[1] - occupied_L, loc_dims[2])
         sub_space = [(loc_dims[0] - occupied_W, occupied_L, loc_dims[2])]
     
-    print(best_orientation)
-    return major_space, sub_space
+    return major_space, sub_space, occupied_W, occupied_L, occupied_w2, occupied_l2, loc_dims, complication
 
 def solution_for_new(sku_id, case, major_space, sub_space):
     case_dims = tuple(case.loc[sku_id, ['case_width', 'case_length', 'case_height']].values)
@@ -132,14 +131,12 @@ def solution_for_new(sku_id, case, major_space, sub_space):
 
         
 def comprehensive(warehouse_number, location_number, sku_id, case = case, loc = loc):
-    major_space, sub_space = space_for_new(warehouse_number, location_number, case, loc)
+    major_space, sub_space, occupied_W, occupied_L, occupied_w2, occupied_l2, loc_dims, complication = space_for_new(warehouse_number, location_number, case, loc)
     opt_cases, opt_solution = solution_for_new(sku_id, case, major_space, sub_space)
 
     if opt_cases:
-        return float(opt_cases), opt_solution
+        return float(opt_cases), opt_solution, occupied_W, occupied_L, occupied_w2, occupied_l2, loc_dims, complication
     else:
         return 'Error: invalid dimensions.'
 
-a,b = comprehensive(101, 'B03', 37)
-print(a)
-print(b)
+opt_cases, opt_solution, occupied_W, occupied_L, occupied_w2, occupied_l2, loc_dims = comprehensive(101, 'B03', 37)
