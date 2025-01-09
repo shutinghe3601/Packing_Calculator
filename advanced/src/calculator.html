@@ -63,8 +63,6 @@
     <script type="text/javascript" src="../data/caseData.js"></script>
     <script type="text/javascript" src="./create3DPlot.js"></script>
     <script type="text/javascript" src="./computation.js"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/troika-three-text/dist/troika-three-text.umd.js"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 </head>
@@ -108,7 +106,6 @@
             <option value="22">22</option>
             <option value="23">23</option>
             <option value="37">37</option>
-            <option value="60">60</option>
         </select>
 
         <button onclick="handleSubmit()">Submit</button>
@@ -130,14 +127,7 @@
                 const {optCases, optSolution, optSolution_present, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication, newCaseDims} = computation_result;
 
                 const outputContainer = document.getElementById('outputContainer');
-                // const { totalCases, packingOrientations } = result;
-                // const loc = locData.find(
-                //     (l) => l.warehouse_number.toString() === warehouseNumber && l.location_number.toString() === locationNumber
-                // );
                 const item = caseData.find((i) => i.sku_id.toString() === skuId);
-
-                // const locDims = [loc.width_inch, loc.depth_inch, loc.height_inch];
-                // const caseDims = [item.case_width, item.case_length, item.case_height];
                 const skuName = item.name;
 
                 if (newCaseDims.some(dim => dim === 0)) {
@@ -174,7 +164,6 @@
                         </tr>
                     `;
                 }
-
 
                 outputContainer.innerHTML = `
                     <h3>Packing Solution</h3>
