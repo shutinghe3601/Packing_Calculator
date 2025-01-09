@@ -2,6 +2,7 @@ function create3DPlot(caseDims, locDims) {
     // Retrieve the plot container
     const plotContainer = document.getElementById('plotContainer');
 
+
     // Clear any previous canvas
     while (plotContainer.firstChild) {
         plotContainer.removeChild(plotContainer.firstChild);
