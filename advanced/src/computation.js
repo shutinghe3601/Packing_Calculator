@@ -22,12 +22,13 @@ function existingParameter(locDims, orientation) {
 
 // Main function to compute space for new cases
 function spaceForNew(warehouseNumber, locationNumber) {
-    // const loc = locData.find(
-    //     (l) => l.warehouse_number.toString() === warehouseNumber && l.location_number.toString() === locationNumber
-    // );
     const loc = locData.find(
-        (l) => l.warehouse_number === parseInt(warehouseNumber) && l.location_number === locationNumber
+        (l) => l.warehouse_number.toString() === warehouseNumber && l.location_number.toString() === locationNumber
     );
+    // const loc = locData.find(
+    //     (l) => l.warehouse_number === parseInt(warehouseNumber) && l.location_number === locationNumber
+    // );
+    if (!loc) throw new Error('there are something wrong with loc')
 
     const locDims = [loc.width_inch, loc.depth_inch, loc.height_inch]
 
@@ -41,7 +42,7 @@ function spaceForNew(warehouseNumber, locationNumber) {
     const locCaseDims = [loc_inv.case_width, loc_inv.case_length, loc_inv.case_height];
 
     if (!loc_inv) {
-        loccaseDims = [0, 0, 0]
+        locCaseDims = [0, 0, 0]
     }
 
     const orientations = permute(locCaseDims);
@@ -89,7 +90,7 @@ function spaceForNew(warehouseNumber, locationNumber) {
         [locDims[0] - occupiedW, occupiedL, locDims[2]]
     ];
     
-    return {majorSpace, subSpaces, bestOrientation, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, locDims };
+    return {majorSpace, subSpaces, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, locDims };
 }
 
 // Helper function to generate permutations
@@ -108,7 +109,7 @@ function permute(arr) {
 // Comprehensive function to compute all necessary results
 function comprehensive(warehouseNumber, locationNumber, skuId) {
     const spaceData = spaceForNew(warehouseNumber, locationNumber);
-    const { majorSpace, subSpaces, bestOrientation, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, locDims: dims } = spaceData;
+    const { majorSpace, subSpaces, occupiedW, occupiedL, occupiedW2, occupiedL2, complication, locDims: dims } = spaceData;
 
     const item = caseData.find((i) => i.sku_id.toString() === skuId);
     if (!item) throw new Error('Item not found for the given SKU ID.');
@@ -147,5 +148,5 @@ function comprehensive(warehouseNumber, locationNumber, skuId) {
         }
     });
 
-    return {optCases, optSolution, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication};
+    return {optCases, optSolution, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication, newCaseDims};
 }
