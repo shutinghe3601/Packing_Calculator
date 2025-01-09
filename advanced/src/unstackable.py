@@ -7,7 +7,7 @@ def read_data():
     loc = pd.read_csv('advanced/data/locData.csv').set_index(['warehouse_number', 'location_number'])
     return case, loc
 
-case, loc = read_data()
+# case, loc = read_data()
 
 def calculate_remaining_space(loc_dims, orientation):
     """Calculate remaining dimensions after fitting cases."""
@@ -33,7 +33,7 @@ def existing_parameter(loc_dims, orientation):
 
     return n_case_stack, n_case_row
 
-def space_for_new(warehouse_number, location_number, case = case, loc = loc):
+def space_for_new(warehouse_number, location_number, case , loc ):
     """Iterate all orientation, return the orientation with maximum number of cases"""
     loc_dims = tuple(loc.loc[(warehouse_number, location_number), ['width_inch', 'depth_inch', 'height_inch']].values)
     loc_inventory = loc.loc[(warehouse_number, location_number), 'loc_inventory']
@@ -132,13 +132,55 @@ def solution_for_new(sku_id, case, major_space, sub_space):
     return opt_cases, opt_solution
 
         
-def comprehensive(warehouse_number, location_number, sku_id, case = case, loc = loc):
-    major_space, sub_space, occupied_W, occupied_L, occupied_w2, occupied_l2, loc_dims, complication = space_for_new(warehouse_number, location_number, case, loc)
-    opt_cases, opt_solution = solution_for_new(sku_id, case, major_space, sub_space)
+# def comprehensive(warehouse_number, location_number, sku_id, case = case, loc = loc):
+#     major_space, sub_space, occupied_W, occupied_L, occupied_w2, occupied_l2, loc_dims, complication = space_for_new(warehouse_number, location_number, case, loc)
+#     opt_cases, opt_solution = solution_for_new(sku_id, case, major_space, sub_space)
 
-    if opt_cases:
-        return float(opt_cases), opt_solution, occupied_W, occupied_L, occupied_w2, occupied_l2, loc_dims, complication
+#     if opt_cases:
+#         return float(opt_cases), opt_solution, occupied_W, occupied_L, occupied_w2, occupied_l2, loc_dims, complication
+#     else:
+#         return 'Error: invalid dimensions.'
+
+# print(comprehensive(101, 'B03', 37))
+
+optSolution =    { "orient": [
+      [
+        17,
+        11,
+        8
+      ],
+      [
+        [3,4,5],
+        [1,2,3]
+      ]
+    ],
+    "n_case": [
+      0,
+      [
+        2,
+        2
+      ]
+    ]
+  }
+
+print(optSolution)
+
+for key,value in optSolution.items():
+    if value[1][1]:
+        optSolution[key] = [value[0] , value[1][0] , value[1][1]]
+    elif value[1][0]:
+        optSolution[key] = [value[0], value[1][0]]
     else:
-        return 'Error: invalid dimensions.'
+        optSolution[key] = value[0]
 
-print(comprehensive(101, 'B03', 37))
+for i in range(0,len(optSolution['orient'])):
+    if i < len(optSolution['orient']) -1 :
+        if optSolution['orient'][i+1] == optSolution['orient'][i]:
+            optSolution['orient'].remove(optSolution['orient'][i+1])
+            optSolution['n_case'][i] +=  optSolution['n_case'][i+1]
+            optSolution['n_case'].remove(optSolution['n_case'][i+1])
+        elif optSolution['n_case'][i] == 0:
+            optSolution['orient'].remove(optSolution['orient'][i])
+            optSolution['n_case'].remove(optSolution['n_case'][i])
+
+print(optSolution)

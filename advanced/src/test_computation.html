@@ -126,6 +126,9 @@
             if (!item) throw new Error('Item not found for the given SKU ID.');
 
             const newCaseDims = [item.case_width, item.case_length, item.case_height];
+            if (newCaseDims.some(dim => dim === 0)) {
+                return {dims, newCaseDims };
+            }
 
             const orientations = permute(newCaseDims);
             let optCases = 0;
@@ -159,20 +162,42 @@
                 }
             });
 
-            Object.keys(optSolution).forEach(key => {
-                    const value = optSolution[key];
+            // create a new optSolution for presentation
+            const optSolution_present = JSON.parse(JSON.stringify(optSolution));
+
+
+            Object.keys(optSolution_present).forEach(key => {
+                    const value = optSolution_present[key];
                     if (Array.isArray(value) && value[1] && value[1][1]) {
-                        optSolution[key] = [value[0], value[1][0], value[1][1]];
+                        optSolution_present[key] = [value[0], value[1][0], value[1][1]];
                     } else if (Array.isArray(value) && value[1] && value[1][0]) {
-                        optSolution[key] = [value[0], value[1][0]];
+                        optSolution_present[key] = [value[0], value[1][0]];
                     } else {
-                        optSolution[key] = value[0];
+                        optSolution_present[key] = value[0];
                     }
                 });
+            // Second Loop: Remove Duplicate Orientations
+            for (let i = 0; i < optSolution_present.orient.length; i++) {
+                if (i < optSolution_present.orient.length - 1) {
+                    // Check if the current and next orientation are the same
+                    if (JSON.stringify(optSolution_present.orient[i + 1]) === JSON.stringify(optSolution_present.orient[i])) {
+                        // Remove duplicate orientation
+                        optSolution_present.orient.splice(i + 1, 1);
+                        // Add the corresponding number of cases
+                        optSolution_present.n_case[i] += optSolution_present.n_case[i + 1];
+                        // Remove the duplicate number of cases
+                        optSolution_present.n_case.splice(i + 1, 1);
+                    } else if (optSolution_present.n_case[i] === 0) {
+                        // Remove orientations with 0 cases
+                        optSolution_present.orient.splice(i, 1);
+                        optSolution_present.n_case.splice(i, 1);
+                        // Adjust index to account for the removal
+                        i--;
+                    }
+                }
+            }
 
-            // remove duplicated orientations and sum up total cases for duplicated orientations.
-
-            return {optCases, optSolution, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication};
+            return {optCases, optSolution, optSolution_present, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication, newCaseDims};
         }
 
         // Example usage
@@ -182,7 +207,7 @@
             const locQty = 15; // Replace with actual input values
             const newCaseDims = [11, 17, 8]; // Replace with actual input values
 
-            const result = comprehensive(101, 'B03', '37');
+            const result = comprehensive(101, 'B03', '60');
             document.getElementById('output').textContent = JSON.stringify(result, null, 2);
         }
     </script>

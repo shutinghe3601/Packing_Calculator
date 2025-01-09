@@ -116,9 +116,14 @@ function comprehensive(warehouseNumber, locationNumber, skuId) {
 
     const newCaseDims = [item.case_width, item.case_length, item.case_height];
 
+    if (newCaseDims.some(dim => dim === 0)) {
+        return {dims, newCaseDims };
+    }
+
     const orientations = permute(newCaseDims);
     let optCases = 0;
     let optSolution = { orient: [], n_case: [] };
+
 
     orientations.forEach(orientation => {
         const majorFit = calculateFitCount(majorSpace, orientation);
@@ -148,5 +153,39 @@ function comprehensive(warehouseNumber, locationNumber, skuId) {
         }
     });
 
-    return {optCases, optSolution, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication, newCaseDims};
+    // create a new optSolution for presentation
+    const optSolution_present = JSON.parse(JSON.stringify(optSolution));
+
+
+    Object.keys(optSolution_present).forEach(key => {
+            const value = optSolution_present[key];
+            if (Array.isArray(value) && value[1] && value[1][1]) {
+                optSolution_present[key] = [value[0], value[1][0], value[1][1]];
+            } else if (Array.isArray(value) && value[1] && value[1][0]) {
+                optSolution_present[key] = [value[0], value[1][0]];
+            } else {
+                optSolution_present[key] = value[0];
+            }
+        });
+    // Second Loop: Remove Duplicate Orientations
+    for (let i = 0; i < optSolution_present.orient.length; i++) {
+        if (i < optSolution_present.orient.length - 1) {
+            // Check if the current and next orientation are the same
+            if (JSON.stringify(optSolution_present.orient[i + 1]) === JSON.stringify(optSolution_present.orient[i])) {
+                // Remove duplicate orientation
+                optSolution_present.orient.splice(i + 1, 1);
+                // Add the corresponding number of cases
+                optSolution_present.n_case[i] += optSolution_present.n_case[i + 1];
+                // Remove the duplicate number of cases
+                optSolution_present.n_case.splice(i + 1, 1);
+            } else if (optSolution_present.n_case[i] === 0) {
+                // Remove orientations with 0 cases
+                optSolution_present.orient.splice(i, 1);
+                optSolution_present.n_case.splice(i, 1);
+                // Adjust index to account for the removal
+                i--;
+            }
+        }
+    }
+    return {optCases, optSolution, optSolution_present, occupiedW, occupiedL, occupiedW2, occupiedL2, dims, complication, newCaseDims};
 }
