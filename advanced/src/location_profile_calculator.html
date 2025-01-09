@@ -61,7 +61,7 @@
     </style>
     <script type="text/javascript" src="../data/locData.js"></script>
     <script type="text/javascript" src="../data/caseData.js"></script>
-    <!-- <script type="text/javascript" src="./create3DPlot.js"></script> -->
+    <script type="text/javascript" src="./create3DPlot.js"></script>
     <script type="text/javascript" src="./computation.js"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/troika-three-text/dist/troika-three-text.umd.js"></script> -->
@@ -151,19 +151,29 @@
                     return;
                 }
 
-                let rows = optSolution_present.orient.map((orient, index) => {
-                    let orientString = Array.isArray(orient) 
-                        ? orient.join(' x ')  // If orient is an array, join its values
-                        : [orient.toArry()];   // If orient is a number, convert it to a string with one decimal place
+                let rows;
 
-                    return `
+                if (Array.isArray(optSolution_present.orient[0])) {
+                    // Case: `orient` is an array of arrays (multiple orientations)
+                    rows = optSolution_present.orient.map((orient, index) => {
+                        return `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${orient.join(' x ')}</td>
+                                <td>${optSolution_present.n_case[index]}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    // Case: `orient` is an array of floats (single orientation)
+                    rows = `
                         <tr>
-                            <td>${index + 1}</td>
-                            <td>${orientString}</td>
-                            <td>${optSolution_present.n_case[index]}</td>
+                            <td>1</td>
+                            <td>${optSolution_present.orient.join(' x ')}</td>
+                            <td>${optSolution_present.n_case}</td>
                         </tr>
                     `;
-                }).join('');
+                }
 
 
                 outputContainer.innerHTML = `
@@ -190,7 +200,8 @@
                 plotContainer.id = 'plotContainer';
                 outputContainer.appendChild(plotContainer);
 
-                // create3DPlot(computation_result); // testing
+                create3DPlot(computation_result);
+                createLegend(plotContainer); // testing
             } catch (error) {
                 const outputContainer = document.getElementById('outputContainer');
                 outputContainer.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
