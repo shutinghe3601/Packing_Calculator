@@ -1,57 +1,66 @@
 # Location Profile Calculator
+
 ## Project Description
-The Location Profile Calculator is a local HTML-based tool designed to compute the optimized orientation for arranging cases within a specified storage location. By taking into account the actual location dimensions (rather than just volume), it provides realistic and efficient solutions for bin and storage usage.
+The **Location Profile Calculator** is a local HTML-based tool designed to determine the optimal orientation for arranging cases within a specified storage location. Unlike traditional volume-based calculations, this tool considers actual location dimensions and existing inventories (arranged with optimized orientation and compacted together, assuming items are unstackable). The goal is to provide realistic and efficient solutions for bin and storage usage.
 
-### Note: 
-The actual calculator package is excluded from this repository for confidentiality reasons. To explore the functionality of this calculator, open src/compute_plot.html in your web browser.
-
-### Key Features:
-- Optimized case orientation computation.
-- Real-time 3D visualization of the arrangement.
+### Key Features
+- **Optimized Case Orientation**: Computes the best orientations for storage.
+- **3D Visualization**: Displays an 3D arrangement view.
 
 ## Features
-Pre-stored Data Integration: Users can select warehouse numbers, location IDs, or SKU IDs to retrieve dimensions automatically, eliminating manual input.
-Optimized Computation: Iteratively evaluates all orientations, including sub-orientations, to maximize space utilization.
-3D Visualization: Provides an interactive, clear representation of the optimized arrangement.
-Data Security: Fully local execution, requiring no internet connection to protect confidential data.
+- **Pre-Stored Data Integration**: 
+  - Retrieve dimensions automatically by selecting warehouse numbers, location IDs, or SKU IDs, eliminating manual data entry.
+- **Optimized Computation**: 
+  - Evaluates all possible orientations, including sub-orientations, to maximize space utilization.
+- **3D Visualization**: 
+  - Visual representation of the optimized arrangement.
+- **Data Security**: 
+  - Fully local execution ensures confidentiality, as no internet connection is required.
 
 ## How It Works
-- Select: Warehouse Number
-- Input: Location Number and SKU ID 
-- Computation:
-    - Calculates the optimal orientation to maximize the number of cases that fit.
-    - Iterates over all sub-orientations for efficient space utilization.
-- Output:
-    - Optimized orientation and total number of cases.
-    - SKU name (in Chinese).
-    - Total case count, including sub-orientations.
-    - Location dimensions (adjusted for an 80% fill rate) and case dimensions.
-    - A 3D plot to visualize the arrangement.
+1. **Select**: Choose the Warehouse Number, Location Number and SKU ID.
+2. **Computation**:
+   - Divide remaining space into multiple sub-spaces.
+   - Iterate over all possible orientations to fit items into each sub-space.
+   - Identify the arrangement yielding the maximum number of cases.
+3. **Output**:
+   - Optimized orientation and total case count.
+   - SKU name and total case count.
+   - Location dimensions (adjusted for an 80% fill rate) and case dimensions.
+   - A 3D visualization of the arrangement, showcasing:
+     - Inventory blocks of existing SKUs.
+     - Main orientation and sub-orientations for the new SKU.
 
 ## Installation
-Clone or download the repository.
+Clone or download the repository using the following command:
 
-Use the following command to clone the project repository:
-    *git clone git@github.com:shuting-weee/location_profile.git*
+```bash
+git clone git@github.com:shuting-weee/location_profile.git 
+```
 
 ## How to Use
-- Open the *html* file in your default web browser.
-- Select the warehouse number from the dropdown list.
-- Input the location number (e.g., B0102-2-2).
-- Input the SKU ID (e.g., 237).
-- Click Submit to compute results.
-- View the optimized arrangement and 3D visualization.
+1. Open the advanced/calculator.html file in your default web browser.
+2. Select the warehouse number from the dropdown menu.
+3. Select the location number from the dropdown menu.
+4. Select the SKU ID from the dropdown menu.
+5. Click Submit to compute the packing solution.
+6. Review the optimized arrangement and 3D visualization.
 
-## Limitations
-- Many SKUs lack valid case dimensions in the database (e.g., dimensions listed as 0,0,0), affecting the accuracy of the optimization.
-- Sub-orientations may not always be feasible or common in practice.
+## Limitations 
+- **Unstackable Assumption**: Existing SKUs are treated as unstackable.
+- **Data Gaps**: Some SKUs lack valid case dimensions in the database (e.g., dimensions listed as 0,0,0), affecting optimization accuracy.
 
 ## Future Enhancements
-- Data Quality Improvements: Enhance the quality of SKU case data by resolving invalid entries.
-- 3D Interactivity: Add rotation and zoom functionalities for a more dynamic 3D visualization.
+- **Data Quality Improvements**: Address invalid SKU case data for better accuracy.
+- **Stackable Solutions**: Develop packing solutions for stackable cases.
 
 ## Acknowledgments
-Three.js: Utilized for rendering the 3D visualization.
+**Three.js**: Utilized for rendering the 3D visualization.
 
-# Contact
-For any questions, please email shuting.he@sayweee.com.
+
+
+
+
+
+
+
