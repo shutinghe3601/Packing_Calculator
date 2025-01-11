@@ -29,13 +29,6 @@ This tool showcases demo usage and algorithm logic, supports further development
      - Inventory blocks of existing SKUs.
      - Main orientation and sub-orientations for the new SKU.
 
-## Installation
-Clone or download the repository using the following command:
-
-```bash
-git clone git@github.com:shutinghe3601/Packing_Calculator.git 
-```
-
 ## How to Use
 1. Open the advanced/calculator.html file in your default web browser.
 2. Select the warehouse number from the dropdown menu.
