@@ -1,11 +1,9 @@
 # Location Profile Calculator
 
 ## Project Description
-The **Location Profile Calculator** is a local HTML-based tool designed to determine the optimal orientation for arranging cases within a specified storage location. Unlike traditional volume-based calculations, this tool considers actual location dimensions and existing inventories (arranged with optimized orientation and compacted together, assuming items are unstackable). The goal is to provide realistic and efficient solutions for bin and storage usage.
+**Packing Calculator** is an HTML-based tool for determining the optimal orientation to arrange cases within a given storage location. Unlike traditional volume-based methods, it considers actual dimensions, existing inventory, and assumes items are unstackable, ensuring compact and efficient arrangements. Its local setup also prevents data leakage.
 
-### Key Features
-- **Optimized Case Orientation**: Computes the best orientations for storage.
-- **3D Visualization**: Displays an 3D arrangement view.
+This tool showcases demo usage and algorithm logic, supports further development. All data in this repository is synthetic and generated for demonstration purposes.
 
 ## Features
 - **Pre-Stored Data Integration**: 
