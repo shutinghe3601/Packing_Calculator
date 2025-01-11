@@ -35,7 +35,7 @@ The **Location Profile Calculator** is a local HTML-based tool designed to deter
 Clone or download the repository using the following command:
 
 ```bash
-git clone git@github.com:shuting-weee/location_profile.git 
+git clone git@github.com:shutinghe3601/Packing_Calculator.git 
 ```
 
 ## How to Use
@@ -56,6 +56,10 @@ git clone git@github.com:shuting-weee/location_profile.git
 
 ## Acknowledgments
 **Three.js**: Utilized for rendering the 3D visualization.
+
+## License
+This project is licensed under the [MIT License](LICENSE.txt).  
+You are free to use, modify, and distribute this software as long as you include the original license notice.
 
 
 
